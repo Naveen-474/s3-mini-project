@@ -17,7 +17,7 @@ class ListController extends Controller
 
     public function getSubCategory($categoryId)
     {
-        $subCategories = SubCategory::select('id', 'name', 'image')->where('category_id', $categoryId)->get()->toArray();
+        $subCategories = SubCategory::select('id', 'name', 'image', 'category_id')->where('category_id', $categoryId)->get()->toArray();
         return response()->json(['message' => 'success', 'ttl' => ttlForListAPIs(), 'subcategories' => $subCategories]);
     }
 
