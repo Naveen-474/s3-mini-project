@@ -1,3 +1,14 @@
+<!-- Common error display section -->
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <input type="number" name="user_id" value="{{ Auth::id() }}" hidden>
 
 <div class="form-row">

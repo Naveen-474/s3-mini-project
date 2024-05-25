@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ImageRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class ImageRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -23,12 +25,36 @@ class ImageRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        return [
             'category' => 'bail|required|numeric|exists:categories,id,deleted_at,NULL',
             'sub_category' => 'bail|required|numeric|exists:sub_categories,id,deleted_at,NULL',
             'files.*' => (($this->method() == "POST") ? 'required' : 'sometimes') . '|image|mimes:jpeg,png,jpg,gif',
         ];
-
-        return $rules;
     }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     *
+     * @throws ValidationException
+     */
+    protected function failedValidation(Validator $validator): void
+    {
+        // Log the mime type and original extension of each file
+        if ($this->hasFile('files')) {
+            foreach ($this->file('files') as $file) {
+                \Log::error('Validation failed for file upload on image model', [
+                    'file_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'original_extension' => $file->getClientOriginalExtension(),
+                    'errors' => $validator->errors()
+                ]);
+            }
+        }
+
+        parent::failedValidation($validator);
+    }
+
 }

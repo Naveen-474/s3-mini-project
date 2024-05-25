@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Validation\Validator;
 
 class CategoryRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class CategoryRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -45,5 +47,30 @@ class CategoryRequest extends FormRequest
             'name.max' => 'Category name must be length of maximum 20',
             'image.required' => 'Category image must required',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     *
+     * @throws ValidationException
+     */
+    protected function failedValidation(Validator $validator): void
+    {
+        // Log the mime type and original extension of each file
+        if ($this->hasFile('image')) {
+            foreach ($this->file('image') as $file) {
+                \Log::error('Validation failed for file upload on category model', [
+                    'file_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'original_extension' => $file->getClientOriginalExtension(),
+                    'errors' => $validator->errors()
+                ]);
+            }
+        }
+
+        parent::failedValidation($validator);
     }
 }

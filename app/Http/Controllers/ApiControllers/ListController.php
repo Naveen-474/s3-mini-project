@@ -23,7 +23,7 @@ class ListController extends Controller
 
     public function getImage($subCategoryId)
     {
-        $images = Image::select('id', 'image')->where('sub_category_id', $subCategoryId)->get()->toArray();
+        $images = Image::select('id', 'image', 'category_id', 'sub_category_id')->where('sub_category_id', $subCategoryId)->get()->toArray();
         return response()->json(['message' => 'success', 'ttl' => ttlForListAPIs(), 'images' => $images]);
     }
 }
